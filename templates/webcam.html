@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3><i class="bi bi-camera-video"></i> Live Photo Emotion Detection</h3>
+                <small>Capture live photos from your webcam and analyze facial emotions in real-time</small>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info border-info">
+                    <h6><i class="bi bi-lightbulb"></i> How It Works:</h6>
+                    <ol class="mb-0 small">
+                        <li>📹 Click "Start Webcam" to activate your camera</li>
+                        <li>👤 Position your face clearly in the video frame</li>
+                        <li>📸 Click "Take Live Photo" to capture and analyze</li>
+                        <li>😊 View detailed emotion analysis results instantly</li>
+                    </ol>
+                </div>
+                
+                <!-- Video Container -->
+                <div class="video-container position-relative text-center bg-dark rounded p-2 mb-3">
+                    <video id="webcam" width="640" height="480" autoplay muted playsinline class="border rounded shadow"></video>
+                    <canvas id="overlay" width="640" height="480" class="position-absolute top-0 start-0 mt-2 ms-2"></canvas>
+                    
+                    <!-- Live indicator -->
+                    <div id="live-indicator" class="position-absolute top-0 end-0 m-2" style="display: none;">
+                        <span class="badge bg-danger">🔴 LIVE</span>
+                    </div>
+                </div>
+                
+                <!-- Controls -->
+                <div class="controls text-center">
+                    <button id="start-btn" class="btn btn-success btn-lg me-2">
+                        <i class="bi bi-play-circle-fill"></i> Start Webcam
+                    </button>
+                    <button id="stop-btn" class="btn btn-danger btn-lg me-2" disabled>
+                        <i class="bi bi-stop-circle-fill"></i> Stop Webcam
+                    </button>
+                    <button id="capture-btn" class="btn btn-primary btn-lg" disabled>
+                        <i class="bi bi-camera-fill"></i> 📸 Take Live Photo
+                    </button>
+                </div>
+                
+                <!-- Status indicator -->
+                <div class="mt-3 text-center">
+                    <span id="webcam-status" class="badge bg-secondary">Webcam Inactive</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Results Panel -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5><i class="bi bi-emoji-smile-fill"></i> Emotion Analysis</h5>
+            </div>
+            <div class="card-body" id="emotion-results">
+                <p class="text-muted">
+                    <i class="bi bi-camera"></i> 
+                    Click "Start Webcam" to begin taking live photos for emotion detection.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Tips Panel -->
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h6><i class="bi bi-lightbulb-fill"></i> Photography Tips</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled small mb-0">
+                    <li>✨ <strong>Lighting:</strong> Face the light source</li>
+                    <li>👀 <strong>Position:</strong> Look directly at camera</li>
+                    <li>😊 <strong>Expression:</strong> Show clear emotions</li>
+                    <li>📱 <strong>Stability:</strong> Stay still during capture</li>
+                    <li>🎯 <strong>Distance:</strong> Maintain 2-3 feet from camera</li>
+                    <li>🔄 <strong>Angles:</strong> Try different facial angles</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Emotion Guide -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-palette-fill"></i> Detectable Emotions</h6>
+            </div>
+            <div class="card-body">
+                <div class="row small">
+                    <div class="col-6">
+                        <div class="mb-1">😊 <span class="badge bg-success">Happy</span></div>
+                        <div class="mb-1">😢 <span class="badge bg-primary">Sad</span></div>
+                        <div class="mb-1">😠 <span class="badge bg-danger">Angry</span></div>
+                        <div class="mb-1">😐 <span class="badge bg-secondary">Neutral</span></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="mb-1">😲 <span class="badge bg-warning">Surprise</span></div>
+                        <div class="mb-1">😨 <span class="badge bg-dark">Fear</span></div>
+                        <div class="mb-1">🤢 <span class="badge bg-info">Disgust</span></div>
+                    </div>
+                </div>
+                <small class="text-muted mt-2 d-block">
+                    <i class="bi bi-info-circle"></i> 
+                    AI analyzes micro-expressions and facial features to determine emotions with confidence scores.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom styles for this page -->
+<style>
+#webcam {
+    max-width: 100%;
+    height: auto;
+}
+
+.video-container {
+    background: linear-gradient(45deg, #1a1a1a, #2d2d2d);
+    min-height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#live-indicator {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.badge {
+    font-size: 0.8em;
+}
+
+.progress {
+    height: 6px;
+}
+
+@media (max-width: 768px) {
+    #webcam {
+        width: 100%;
+        max-width: 320px;
+    }
+    
+    .controls .btn {
+        margin: 2px;
+        font-size: 0.9em;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/webcam.js' %}"></script>
+
+<script>
+// Update live indicator and status
+document.addEventListener('DOMContentLoaded', function() {
+    const liveIndicator = document.getElementById('live-indicator');
+    const statusBadge = document.getElementById('webcam-status');
+    
+    // Update status when webcam starts
+    window.addEventListener('webcamStarted', function() {
+        liveIndicator.style.display = 'block';
+        statusBadge.className = 'badge bg-success';
+        statusBadge.textContent = '🟢 Webcam Active';
+    });
+    
+    // Update status when webcam stops
+    window.addEventListener('webcamStopped', function() {
+        liveIndicator.style.display = 'none';
+        statusBadge.className = 'badge bg-secondary';
+        statusBadge.textContent = 'Webcam Inactive';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Upload Image for Emotion Detection</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.image.id_for_label }}" class="form-label">Select Image</label>
+                        {{ form.image }}
+                    </div>
+                    <div class="mb-3">
+                        <small class="form-text text-muted">
+                            Supported formats: JPG, PNG, GIF. Maximum size: 50MB.
+                        </small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Detect Emotions</button>
+                    <a href="{% url 'detector:index' %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6>Tips for best results:</h6>
+            <ul class="mb-0">
+                <li>Use well-lit images with clear faces</li>
+                <li>Faces should be front-facing for better accuracy</li>
+                <li>Multiple faces in one image are supported</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

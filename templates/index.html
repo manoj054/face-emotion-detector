@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="jumbotron bg-light p-5 rounded">
+            <h1 class="display-4">Face Emotion Detection</h1>
+            <p class="lead">Detect emotions from images or live webcam feed using advanced AI technology.</p>
+            <hr class="my-4">
+            <p>Choose from multiple detection methods to analyze facial expressions and emotions.</p>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Upload Image</h5>
+                        <p class="card-text">Upload an image file to detect emotions from faces.</p>
+                        <a href="{% url 'detector:upload' %}" class="btn btn-primary">Upload Image</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Live Detection</h5>
+                        <p class="card-text">Use your webcam for real-time emotion detection.</p>
+                        <a href="{% url 'detector:webcam' %}" class="btn btn-success">Start Webcam</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">View History</h5>
+                        <p class="card-text">Check your previous detection sessions.</p>
+                        <a href="{% url 'detector:history' %}" class="btn btn-info">View History</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <h4>Recent Sessions</h4>
+        {% if recent_sessions %}
+            <div class="list-group">
+                {% for session in recent_sessions %}
+                    <a href="{% url 'detector:results' session.session_id %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ session.get_detection_type_display }}</h6>
+                            <small>{{ session.created_at|timesince }} ago</small>
+                        </div>
+                        <small>Session: {{ session.session_id|slice:":8" }}...</small>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">No recent sessions found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

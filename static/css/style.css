@@ -1,0 +1,84 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.jumbotron {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.video-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000;
+}
+
+#webcam {
+    max-width: 100%;
+    height: auto;
+}
+
+#overlay {
+    pointer-events: none;
+}
+
+.emotion-bar {
+    height: 20px;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 5px 0;
+}
+
+.emotion-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+    transition: width 0.3s ease;
+}
+
+.controls button {
+    margin-right: 10px;
+}
+
+.alert {
+    border-radius: 0.5rem;
+}
+
+.badge {
+    font-size: 0.875em;
+}
+
+@media (max-width: 768px) {
+    .video-container {
+        width: 100%;
+    }
+    
+    #webcam {
+        width: 100%;
+    }
+    
+    .controls {
+        text-align: center;
+    }
+    
+    .controls button {
+        margin: 5px;
+        width: 100%;
+    }
+}

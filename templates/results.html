@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3>Detection Results</h3>
+                <small class="text-muted">Session: {{ session.session_id }}</small>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Detection Type:</strong> {{ session.get_detection_type_display }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Created:</strong> {{ session.created_at }}
+                    </div>
+                </div>
+                
+                {% if results %}
+                    <h5>Detected Faces: {{ results.count }}</h5>
+                    
+                    {% for result in results %}
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6>Face {{ forloop.counter }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Dominant Emotion: <span class="badge bg-primary">{{ result.dominant_emotion|title }}</span></h6>
+                                        <p><strong>Confidence:</strong> {{ result.confidence_score|floatformat:2 }}%</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>All Emotions:</h6>
+                                        {% for emotion, value in result.emotions.items %}
+                                            <div class="d-flex justify-content-between">
+                                                <span>{{ emotion|title }}:</span>
+                                                <span>{{ value|floatformat:2 }}%</span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-warning">
+                        No faces were detected in this session.
+                    </div>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <a href="{% url 'detector:index' %}" class="btn btn-primary">Back to Home</a>
+                    <a href="{% url 'detector:history' %}" class="btn btn-secondary">View All Sessions</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
