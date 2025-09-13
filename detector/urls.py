@@ -5,9 +5,9 @@ app_name = 'detector'
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('upload/', views.upload_image, name='upload'),
-    path('webcam/', views.webcam_detection, name='webcam'),
-    path('process-frame/', views.process_webcam_frame, name='process_frame'),
-    path('results/<str:session_id>/', views.detection_results, name='results'),
-    path('history/', views.detection_history, name='history'),
+    path('webcam/', views.webcam, name='webcam'),
+    path('analyze-frame/', views.analyze_webcam_frame, name='analyze_webcam_frame'),
+    path('upload/', views.upload, name='upload'),
+    path('history/', views.history, name='history'),
+    path('results/<str:session_id>/', views.results, name='results'),
 ]

@@ -1,21 +1,22 @@
 {% extends 'base.html' %}
 
+{% block title %}Face Emotion Detector{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-md-8">
-        <div class="jumbotron bg-light p-5 rounded">
-            <h1 class="display-4">Face Emotion Detection</h1>
-            <p class="lead">Detect emotions from images or live webcam feed using advanced AI technology.</p>
-            <hr class="my-4">
-            <p>Choose from multiple detection methods to analyze facial expressions and emotions.</p>
+        <div class="jumbotron bg-primary text-white p-4 rounded">
+            <h1 class="display-4">Welcome to Face Emotion Detector</h1>
+            <p class="lead">Analyze facial emotions using advanced AI technology</p>
         </div>
         
         <div class="row mt-4">
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-body text-center">
-                        <h5 class="card-title">Upload Image</h5>
-                        <p class="card-text">Upload an image file to detect emotions from faces.</p>
+                        <i class="fas fa-upload fa-3x text-primary mb-3"></i>
+                        <h5>Upload Image</h5>
+                        <p class="card-text">Upload an image to analyze facial emotions.</p>
                         <a href="{% url 'detector:upload' %}" class="btn btn-primary">Upload Image</a>
                     </div>
                 </div>
@@ -23,7 +24,8 @@
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-body text-center">
-                        <h5 class="card-title">Live Detection</h5>
+                        <i class="fas fa-camera fa-3x text-success mb-3"></i>
+                        <h5>Live Detection</h5>
                         <p class="card-text">Use your webcam for real-time emotion detection.</p>
                         <a href="{% url 'detector:webcam' %}" class="btn btn-success">Start Webcam</a>
                     </div>
@@ -32,7 +34,8 @@
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-body text-center">
-                        <h5 class="card-title">View History</h5>
+                        <i class="fas fa-history fa-3x text-info mb-3"></i>
+                        <h5>View History</h5>
                         <p class="card-text">Check your previous detection sessions.</p>
                         <a href="{% url 'detector:history' %}" class="btn btn-info">View History</a>
                     </div>
@@ -56,7 +59,7 @@
                 {% endfor %}
             </div>
         {% else %}
-            <p class="text-muted">No recent sessions found.</p>
+            <p>No previous sessions found.</p>
         {% endif %}
     </div>
 </div>

@@ -3,26 +3,25 @@ import uuid
 
 class DetectionSession(models.Model):
     DETECTION_TYPES = [
-        ('image', 'Image Upload'),
-        ('webcam', 'Webcam'),
-        ('video', 'Video File')
+        ('webcam', 'Webcam Detection'),
+        ('upload', 'Image Upload'),
     ]
     
     session_id = models.CharField(max_length=100, unique=True, default=uuid.uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
-    detection_type = models.CharField(max_length=20, choices=DETECTION_TYPES)
+    detection_type = models.CharField(max_length=10, choices=DETECTION_TYPES)
     
     def __str__(self):
-        return f"Session {self.session_id} - {self.detection_type}"
+        return f"Session {self.session_id[:8]} - {self.get_detection_type_display()}"
+    
+    class Meta:
+        ordering = ['-created_at']
 
-class EmotionResult(models.Model):
-    session = models.ForeignKey(DetectionSession, on_delete=models.CASCADE)
-    image_path = models.CharField(max_length=255)
-    emotions = models.JSONField()
-    face_coordinates = models.JSONField()
-    dominant_emotion = models.CharField(max_length=50)
-    confidence_score = models.FloatField()
-    processed_at = models.DateTimeField(auto_now_add=True)
+class DetectionResult(models.Model):
+    session = models.ForeignKey(DetectionSession, on_delete=models.CASCADE, related_name='results')
+    dominant_emotion = models.CharField(max_length=20)
+    emotion_scores = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"Result for {self.session.session_id} - {self.dominant_emotion}"
+        return f"{self.session.session_id[:8]} - {self.dominant_emotion}"

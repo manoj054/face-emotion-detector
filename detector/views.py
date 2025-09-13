@@ -1,95 +1,134 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.core.files.storage import FileSystemStorage
-from django.conf import settings
-from .models import DetectionSession, EmotionResult
-from .utils import process_image_emotion, process_webcam_frame
-from .forms import ImageUploadForm
 import json
+import base64
+import cv2
+import numpy as np
 import uuid
-import os
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from deepface import DeepFace
+from django.utils import timezone
+import io
+from PIL import Image
+from .models import DetectionSession, DetectionResult
 
 def index(request):
-    """Homepage with navigation options"""
-    recent_sessions = DetectionSession.objects.all().order_by('-created_at')[:5]
-    return render(request, 'index.html', {'recent_sessions': recent_sessions})
-
-def upload_image(request):
-    """Handle image upload and emotion detection"""
-    if request.method == 'POST':
-        form = ImageUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            uploaded_file = request.FILES['image']
-            
-            # Create session
-            session = DetectionSession.objects.create(
-                detection_type='image'
-            )
-            
-            # Save uploaded file
-            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads/images'))
-            filename = fs.save(uploaded_file.name, uploaded_file)
-            file_path = fs.path(filename)
-            
-            # Process emotion detection
-            results = process_image_emotion(file_path)
-            
-            # Save results to database
-            for result in results:
-                EmotionResult.objects.create(
-                    session=session,
-                    image_path=file_path,
-                    emotions=result['emotions'],
-                    face_coordinates=result['coordinates'],
-                    dominant_emotion=result['dominant_emotion'],
-                    confidence_score=max(result['emotions'].values())
-                )
-            
-            return redirect('detector:results', session_id=session.session_id)
-    else:
-        form = ImageUploadForm()
+    """Homepage view"""
+    try:
+        recent_sessions = DetectionSession.objects.order_by('-created_at')[:5]
+    except:
+        recent_sessions = []
     
-    return render(request, 'upload.html', {'form': form})
+    return render(request, 'index.html', {
+        'recent_sessions': recent_sessions
+    })
 
-def webcam_detection(request):
-    """Real-time webcam emotion detection"""
+def webcam(request):
+    """Render the webcam page"""
     return render(request, 'webcam.html')
 
 @csrf_exempt
-def process_webcam_frame(request):
-    """API endpoint for webcam frame processing"""
+def analyze_webcam_frame(request):
+    """Process webcam frame and return emotion results"""
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
-            frame_data = data.get('frame')
+            # Get base64 image data from JavaScript
+            image_data = request.POST.get('image_data')
             
-            if frame_data:
-                results = process_webcam_frame(frame_data)
+            if not image_data:
                 return JsonResponse({
-                    'success': True,
-                    'faces': results,
-                    'count': len(results)
+                    'success': False,
+                    'error': 'No image data received',
+                    'face_detected': False
                 })
-            else:
-                return JsonResponse({'success': False, 'error': 'No frame data'})
+            
+            # Remove the data URL prefix
+            image_data = image_data.split(',')[1]
+            
+            # Decode base64 to image
+            image_bytes = base64.b64decode(image_data)
+            image = Image.open(io.BytesIO(image_bytes))
+            
+            # Convert PIL image to OpenCV format
+            opencv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+            
+            # Analyze emotion using DeepFace
+            result = DeepFace.analyze(
+                opencv_image, 
+                actions=['emotion'], 
+                enforce_detection=False
+            )
+            
+            if isinstance(result, list):
+                result = result[0]
+            
+            # Extract emotion data
+            dominant_emotion = result['dominant_emotion']
+            emotion_scores = result['emotion']
+            
+            # Format confidence scores
+            formatted_emotions = {
+                emotion: round(score, 2) 
+                for emotion, score in emotion_scores.items()
+            }
+            
+            # Save to database (optional)
+            try:
+                session = DetectionSession.objects.create(
+                    session_id=str(uuid.uuid4()),
+                    detection_type='webcam'
+                )
                 
+                DetectionResult.objects.create(
+                    session=session,
+                    dominant_emotion=dominant_emotion,
+                    emotion_scores=formatted_emotions
+                )
+            except:
+                pass  # Continue even if database save fails
+            
+            return JsonResponse({
+                'success': True,
+                'dominant_emotion': dominant_emotion,
+                'all_emotions': formatted_emotions,
+                'face_detected': True
+            })
+            
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+            return JsonResponse({
+                'success': False,
+                'error': str(e),
+                'face_detected': False,
+                'message': 'Could not detect faces. Please ensure good lighting and look directly at the camera.'
+            })
     
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-def detection_results(request, session_id):
-    """Display detection results"""
-    session = get_object_or_404(DetectionSession, session_id=session_id)
-    results = EmotionResult.objects.filter(session=session)
+def upload(request):
+    """Upload image view"""
+    return render(request, 'upload.html')
+
+def history(request):
+    """History view"""
+    try:
+        sessions = DetectionSession.objects.order_by('-created_at')
+    except:
+        sessions = []
+    
+    return render(request, 'history.html', {
+        'sessions': sessions
+    })
+
+def results(request, session_id):
+    """Results view"""
+    try:
+        session = get_object_or_404(DetectionSession, session_id=session_id)
+        results = DetectionResult.objects.filter(session=session)
+    except:
+        session = None
+        results = []
     
     return render(request, 'results.html', {
         'session': session,
         'results': results
     })
-
-def detection_history(request):
-    """View past detection sessions"""
-    sessions = DetectionSession.objects.all().order_by('-created_at')
-    return render(request, 'history.html', {'sessions': sessions})
